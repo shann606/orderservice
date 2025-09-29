@@ -1,6 +1,8 @@
 package com.ecom.orderservice.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,17 +28,41 @@ public class OrderService {
 		// TODO Auto-generated method stub
 
 		log.info("order creation initiated");
+		if (orders.getId() == null) {
+
+			orders.setOrderNo(orderRepo.getOrderNumber());
+
+		}
+		
+		orders.setOrderPlaced(OffsetDateTime.now());
+		orders.getOrderItems().stream().forEach((s) -> {
+			s.setOrderPlacedOn(OffsetDateTime.now());
+			
+		});
+		
 
 		Order order = orderRepo.saveAndFlush(cMapper.toOrderEntity(orders));
 
 		return cMapper.toOrderDto(order);
 	}
 
-	public List<OrderDTO> findAllByOrderNo(int orderNo) {
-		// TODO Auto-generated method stub
+	public OrderDTO findByOrderNo(long orderNo) throws Exception { // TODO Auto-generated method
+		Order order = orderRepo.findByOrderNo(orderNo);
+
+		return cMapper.toOrderDto(order);
+
+	}
+
+	public List<OrderDTO> findAllOrders() throws Exception {
+	
+		return cMapper.toOrdersList(orderRepo.findAll());
+	}
+
+	public OrderDTO findByOrderId(UUID id) throws Exception{
 		
-	   List<Order> orders =orderRepo.findAllOrdersByOrderNo(orderNo);
-		return cMapper.toOrdersList(orders);
+		log.info("getting id or nor " + orderRepo.findById(id).get().toString());
+		// TODO Auto-generated method stub
+		return cMapper.toOrderDto(orderRepo.findById(id).get());
 	}
 
 }
