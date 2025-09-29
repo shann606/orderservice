@@ -22,7 +22,7 @@ public class OrderDTO implements Serializable {
 	private static final long serialVersionUID = 1595612532622574461L;
 
 	private UUID id;
-	private int orderNo;
+	private long orderNo;
 	private PaymentStatus paymentStatus;
 	private OrderStatus orderStatus;
 	private OffsetDateTime orderPlaced;

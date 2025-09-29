@@ -9,7 +9,7 @@ import com.ecom.orderservice.dto.OrderItemsDTO;
 import com.ecom.orderservice.entity.Order;
 import com.ecom.orderservice.entity.OrderItems;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface CustomMappaer {
 
 	OrderDTO toOrderDto(Order order);
