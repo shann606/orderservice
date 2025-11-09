@@ -26,8 +26,12 @@ import com.ecom.orderservice.service.OrderService;
 @RequestMapping("/api/v1/order")
 public class OrderController {
 
-	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	public OrderController(OrderService orderService) {
+		this.orderService = orderService;
+	}
 
 	@PostMapping("/placeorder")
 	public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orders) throws Exception {
@@ -65,14 +69,14 @@ public class OrderController {
 	@GetMapping("/testorders")
 	List<OrderDTO> getOrder() {
 
-		List<OrderDTO> order = new ArrayList<OrderDTO>();
-		List<OrderItemsDTO> orderItems = new ArrayList<OrderItemsDTO>();
+		List<OrderDTO> order = new ArrayList<>();
+		List<OrderItemsDTO> orderItems = new ArrayList<>();
 
 		OrderItemsDTO items = OrderItemsDTO.builder().addr1("Rvam street").addr2("Brooks villa ave").city("Manhattan")
 				.country("USA").customerName("Clarke").deliveryDate(OffsetDateTime.now()).build();
 		orderItems.add(items);
 		OrderDTO ord = OrderDTO.builder().id(UUID.randomUUID()).orderNo(68686).orderPlaced(OffsetDateTime.now())
-				.paymentStatus(PaymentStatus.confirmed).orderItems(orderItems).build();
+				.paymentStatus(PaymentStatus.OPEN).orderItems(orderItems).build();
 		order.add(ord);
 
 		return order;

@@ -1,7 +1,7 @@
 package com.ecom.orderservice.dto;
 
 public enum PaymentStatus {
-	
-	inprogress,confirmed,cancelled,failed
+
+	INPROGRESS, CONFIRMED, CANCELLED, FAILED, OPEN
 
 }
