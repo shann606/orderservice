@@ -1,11 +1,8 @@
 package com.ecom.orderservice.entity;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
-import com.ecom.orderservice.dto.OrderStatus;
-import com.ecom.orderservice.dto.PaymentStatus;
 import com.ecom.orderservice.dto.ShippingStatus;
 
 import jakarta.persistence.Column;
@@ -82,7 +79,7 @@ public class OrderItems {
 	
 	@PrePersist
 	private void generatedId() {
-		if(id == null || id.equals("")) {
+		if(id == null ) {
 			id=UUID.randomUUID();
 		}
 	}

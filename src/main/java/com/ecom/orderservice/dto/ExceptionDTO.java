@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ExceptionDTO  implements Serializable{
 	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -5434408517482623224L;
 	private String status;
 	private String details;
