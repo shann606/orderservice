@@ -1,6 +1,7 @@
 package com.ecom.orderservice.dto;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,10 @@ public class OrderDTO implements Serializable {
 	private long orderNo;
 	private PaymentStatus paymentStatus;
 	private OrderStatus orderStatus;
+	private String failedReason;
 	private OffsetDateTime orderPlaced;
+	private BigDecimal totalAmount;
 	private List<OrderItemsDTO> orderItems;
+
 
 }

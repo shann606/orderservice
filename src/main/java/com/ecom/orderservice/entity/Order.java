@@ -1,5 +1,6 @@
 package com.ecom.orderservice.entity;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class Order {
 	@Column(name = "id", nullable = false)
 	private UUID id;
 
-	@Column(name = "order_no", updatable = false)
+	@Column(name = "order_no", updatable = false , unique = true)
 	private long orderNo;
 
 	@Column(name = "payment_status")
@@ -47,9 +48,15 @@ public class Order {
 	@Column(name = "order_status")
 	@Enumerated(EnumType.STRING)
 	private OrderStatus orderStatus;
+	
+	@Column(name = "failed_reason")
+	private String failedReason;
 
 	@Column(name = "order_placed_on", columnDefinition = "date")
 	private OffsetDateTime orderPlaced;
+	
+	@Column(name = "total_amount")
+	private BigDecimal totalAmount;
 
 	@OneToMany(orphanRemoval = true , cascade = CascadeType.ALL)
 	@JoinColumn(name = "order_id", nullable = false)
