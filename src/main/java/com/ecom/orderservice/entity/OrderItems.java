@@ -1,5 +1,6 @@
 package com.ecom.orderservice.entity;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -35,6 +36,9 @@ public class OrderItems {
 	
 	@Column(name = "order_id" , nullable = false, insertable = false, updatable = false)
 	private UUID orderId;
+	
+	@Column(name="item_amount")
+	private BigDecimal itemAmount;
 	
 	@Column(name = "customer_id")
 	private UUID customerId;

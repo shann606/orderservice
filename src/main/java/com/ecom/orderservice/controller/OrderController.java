@@ -22,8 +22,11 @@ import com.ecom.orderservice.dto.OrderItemsDTO;
 import com.ecom.orderservice.dto.PaymentStatus;
 import com.ecom.orderservice.service.OrderService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/api/v1/order")
+@Slf4j
 public class OrderController {
 
 	private OrderService orderService;
@@ -55,12 +58,13 @@ public class OrderController {
 	public ResponseEntity<OrderDTO> findByOrderNo(@RequestParam(name = "orderno", required = true) long orderno)
 			throws Exception {
 
+	
 		return ResponseEntity.ok(orderService.findByOrderNo(orderno));
 
 	}
 
 	@GetMapping("/allorders")
-	public ResponseEntity<List<OrderDTO>> getAllOrder() throws Exception {
+	public ResponseEntity<List<OrderDTO>> getAllOrder() {
 
 		return ResponseEntity.ok(orderService.findAllOrders());
 
