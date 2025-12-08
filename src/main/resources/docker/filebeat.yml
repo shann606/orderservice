@@ -1,0 +1,42 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: false
+
+      templates:
+        - condition:
+            contains:
+              docker.container.labels.service_logs_with_filebeat: "true"
+
+          config:
+            - type: container
+              format: docker
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+
+              processors:
+                - add_docker_metadata: ~
+
+                - decode_json_fields:
+                    when:
+                      equals:
+                        docker.container.labels.service_with_decode: "true"
+                    fields: ["message"]
+                    target: ""
+                    overwrite_keys: true
+
+logging.level: debug
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+  setup.template.enabled: true
+  setup.template.overwrite: true
+  setup.ilm.enabled: true
+  setup.ilm.overwrite: true
+
+  #indices:
+   # - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+logging.json: true
+logging.metrics.enabled: false

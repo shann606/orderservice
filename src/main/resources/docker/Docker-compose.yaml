@@ -21,57 +21,55 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-
   zipkin:
-     image: openzipkin/zipkin-slim:${TAG:-latest}
-     container_name: zipkin
-     ports:
-        - 9411:9411
-     environment:
-      - STORAGE_TYPE=mem
-    #  - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT= http://zipkin:9411/api/v2/spans 
-      
-#  elasticsearch:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
-#    container_name: elasticsearch
-#    environment:
-#      - discovery.type=single-node
-#      - xpack.security.enabled=false
-#      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-#    ports:
-#      - "9200:9200"
-#       
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:8.17.0
-#    container_name: kibana
-#    depends_on:
-#      - elasticsearch
-#    ports:
-#      - "5601:5601"
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 
-#    restart: on-failure
-#      
-#      
-#      
-#  filebeat:
-#    image: docker.elastic.co/beats/filebeat:8.17.0
-#    container_name: filebeat
-#    user: root     # needed to access docker logs
-#    depends_on:
-#      - elasticsearch
-#    volumes:
-#      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-#      - /var/run/docker.sock:/var/run/docker.sock:ro
-#      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-#    restart: on-failure
+    image: openzipkin/zipkin-slim:${TAG:-latest}
+    container_name: zipkin
+    ports:
+      - 9411:9411
+    environment:
+      STORAGE_TYPE: mem
 
-  euraka:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    container_name: kibana
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    restart: on-failure
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.17.0
+    container_name: filebeat
+    user: root
+    depends_on:
+      - elasticsearch
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    command: ["-e", "--strict.perms=false", "--environment=container"]
+   
+    restart: on-failure
+
+  eureka:
     image: euraka:${TAG:-latest}
     ports:
       - 8761:8761
     environment:
-      - STORAGE_TYPE:mem
+      STORAGE_TYPE: mem
 
   gateway:
     image: gateway:latest
@@ -79,68 +77,70 @@ services:
     ports:
       - 9090:9090
     environment:
-     - STORAGE_TYPE=mem
-     - EUREKA_INSTANCE_HOSTNAME=host.docker.internal
-     - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      STORAGE_TYPE: mem
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
-      - euraka
- 
-    
+      - eureka
+    labels:
+      service_logs_with_filebeat: "true"
+
   customerservice:
     image: customerservice:latest
     container_name: customerservice
     environment:
-      - STORAGE_TYPE=mem
-      - EUREKA_INSTANCE_HOSTNAME=host.docker.internal
-      - SPRING_PROFILES_ACTIVE=local-secure
-      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      STORAGE_TYPE: mem
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_PROFILES_ACTIVE: local-secure
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
-      - 8081:8081 
+      - 8081:8081
     depends_on:
-      - euraka
-   
+      - eureka
+    labels:
+      service_logs_with_filebeat: "true"
 
   productservice:
     image: productservice:latest
     container_name: productservice
     environment:
-      - STORAGE_TYPE=mem
-      - EUREKA_INSTANCE_HOSTNAME=host.docker.internal
-      - SPRING_PROFILES_ACTIVE=local-secure
-      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      STORAGE_TYPE: mem
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_PROFILES_ACTIVE: local-secure
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - 8080:8080
     depends_on:
-      - euraka
-    
+      - eureka
+    labels:
+      service_logs_with_filebeat: "true"
+
   orderservice:
     image: orderservice:latest
     container_name: orderservice
     environment:
-      - STORAGE_TYPE=mem
-      - EUREKA_INSTANCE_HOSTNAME=host.docker.internal
-      - SPRING_PROFILES_ACTIVE=local-secure
-      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      STORAGE_TYPE: mem
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_PROFILES_ACTIVE: local-secure
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
-      - 8082:8082 
+      - 8082:8082
     depends_on:
-      - euraka
-  
-   
+      - eureka
+    labels:
+      service_logs_with_filebeat: "true"
+
   paymentservice:
     image: paymentservice:latest
     container_name: paymentservice
     environment:
-      - STORAGE_TYPE=mem
-      - EUREKA_INSTANCE_HOSTNAME=host.docker.internal
-      - SPRING_PROFILES_ACTIVE=local-secure
-      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      STORAGE_TYPE: mem
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_PROFILES_ACTIVE: local-secure
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - 8083:8083
     depends_on:
-      - euraka
-    
-    
-
-    
-      
+      - eureka
+    labels:
+      service_logs_with_filebeat: "true"
