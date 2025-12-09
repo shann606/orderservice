@@ -84,6 +84,7 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+     
 
   customerservice:
     image: customerservice:latest
@@ -99,6 +100,7 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+      
 
   productservice:
     image: productservice:latest
@@ -114,6 +116,7 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+     
 
   orderservice:
     image: orderservice:latest
@@ -129,6 +132,7 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+      
 
   paymentservice:
     image: paymentservice:latest
@@ -144,3 +148,4 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+      

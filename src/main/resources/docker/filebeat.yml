@@ -21,7 +21,7 @@ filebeat.autodiscover:
                     when:
                       equals:
                         docker.container.labels.service_with_decode: "true"
-                    fields: ["message"]
+                    fields: ["service" ,"trace" ,"span","rest"]
                     target: ""
                     overwrite_keys: true
 
