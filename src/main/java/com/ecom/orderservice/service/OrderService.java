@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +30,6 @@ public class OrderService {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	@Autowired
 	public OrderService(OrderRepository orderRepo, CustomMappaer cMapper, KafkaTemplate<String, Object> kafkaTemplate) {
 		this.kafkaTemplate = kafkaTemplate;
 		this.orderRepo = orderRepo;
@@ -69,6 +66,7 @@ public class OrderService {
 			log.info("Order created and hitting kafka queue");
 
 			kafkaTemplate.send("order-created", orderEvent);
+			log.info("Order details sent to payment gateway");
 
 		} catch (Exception e) {
 			log.info("Rollback initilized");
@@ -97,25 +95,37 @@ public class OrderService {
 		return cMapper.toOrderDto(orderRepo.findById(id).get());
 	}
 
+	public int updatePaymentStatus(PaymentResponseEvent paymentResult)  {
+		log.info("updating the payment status in order table" + paymentResult.toString());
+		int i=0;
+		try {
+			 i = orderRepo.updatePaymentStatus(paymentResult.getPaymentStatus(), paymentResult.getReason(),
+					paymentResult.getOrderNo());
+			if (i == 1) {
+				log.info("Payment status successfull updated in Order table");
+			}
 
-	public void updatePaymentStatus(PaymentResponseEvent paymentResult) {
-		log.info("updating the payment status in order table"+ paymentResult.toString());
-		int i=orderRepo.updatePaymentStatus(paymentResult.getOrderNo(), paymentResult.getPaymentStatus(),
-				paymentResult.getReason());
-		if(i==1) {
-		log.info("Payment status successfull updated in Order table");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-
+       return i;
 	}
-	
-	
-	public void updatePaymentStatus(PaymentResponseEvent paymentResult,OrderStatus orderStatus) {
-		log.info("updating the payment status in order table"+ paymentResult.toString());
-		int i=orderRepo.updatePaymentStatus(paymentResult.getOrderNo(), paymentResult.getPaymentStatus(),
-				paymentResult.getReason(),orderStatus);
-		if(i==1) {
-		log.info("Payment Update status successfull updated in Order table");
+
+	public int updatePaymentStatus(PaymentResponseEvent paymentResult, OrderStatus orderStatus){
+		log.info("updating the payment status in order table" + paymentResult.toString());
+		int i=0;
+		try {
+			 i = orderRepo.updatePaymentStatus(paymentResult.getPaymentStatus(), paymentResult.getReason(),
+					orderStatus, paymentResult.getOrderNo());
+			if (i == 1) {
+				log.info("Payment Update status successfull updated in Order table");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
+		return i;
 
 	}
 
