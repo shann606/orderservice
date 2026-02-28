@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,18 +24,17 @@ import com.ecom.orderservice.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/v1/order")
+@RequestMapping("/api/v1/orders")
 @Slf4j
 public class OrderController {
 
 	private OrderService orderService;
 
-	@Autowired
 	public OrderController(OrderService orderService) {
 		this.orderService = orderService;
 	}
 
-	@PostMapping("/placeorder")
+	@PostMapping("/order")
 	public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orders) throws Exception {
 
 		OrderDTO order = orderService.placeOrder(orders);
@@ -48,22 +46,19 @@ public class OrderController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<OrderDTO> getAllOrderByOrderNo(@PathVariable(name = "id") UUID id) throws Exception {
+	public ResponseEntity<OrderDTO> getAllOrderByOrderNo(@PathVariable UUID id) throws Exception {
 
 		return ResponseEntity.ok(orderService.findByOrderId(id));
 
 	}
 
-	@GetMapping("/searchorder")
-	public ResponseEntity<OrderDTO> findByOrderNo(@RequestParam(name = "orderno", required = true) long orderno)
-			throws Exception {
-
-	
+	@GetMapping("/byorderno")
+	public ResponseEntity<OrderDTO> findByOrderNo(@RequestParam(required = true) long orderno) {
 		return ResponseEntity.ok(orderService.findByOrderNo(orderno));
 
 	}
 
-	@GetMapping("/allorders")
+	@GetMapping
 	public ResponseEntity<List<OrderDTO>> getAllOrder() {
 
 		return ResponseEntity.ok(orderService.findAllOrders());

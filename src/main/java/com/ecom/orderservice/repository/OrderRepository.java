@@ -26,12 +26,13 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 	@Modifying
 	@Transactional
 	@Query("UPDATE Order o SET o.paymentStatus = :paymentStatus, o.failedReason= :reason WHERE o.orderNo = :orderNo")
-	int updatePaymentStatus(@Param("orderNo") long orderNo, @Param("paymentStatus") PaymentStatus paymentStatus,
-			@Param("reason") String reason);
+	int updatePaymentStatus(@Param("paymentStatus") PaymentStatus paymentStatus, @Param("reason") String reason,
+			@Param("orderNo") long orderNo);
 
 	@Modifying
 	@Transactional
 	@Query("UPDATE Order o SET o.paymentStatus = :paymentStatus,o.orderStatus=:orderStatus , o.failedReason= :reason WHERE o.orderNo = :orderNo")
-	int updatePaymentStatus(long orderNo, PaymentStatus paymentStatus, String reason, OrderStatus orderStatus);
+	int updatePaymentStatus(@Param("paymentStatus") PaymentStatus paymentStatus, @Param("reason") String reason,
+			@Param("orderStatus") OrderStatus orderStatus, @Param("orderNo") long orderNo);
 
 }
