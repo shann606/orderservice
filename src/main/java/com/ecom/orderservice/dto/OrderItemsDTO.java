@@ -33,6 +33,7 @@ public class OrderItemsDTO implements Serializable {/**
 	private ShippingStatus shippingStatus;
 	private OffsetDateTime deliveryDate;
 	private UUID productId;
+	private int quantity;
 	private String orderBy;
 	private OffsetDateTime orderPlacedOn;
 	

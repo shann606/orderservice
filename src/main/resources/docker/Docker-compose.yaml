@@ -84,7 +84,41 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
+
+  postgres:
+    image: postgres:13
+    container_name: temporal-postgres
+    ports:
+     - 5432:5432
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
      
+
+  temporal:
+     image: temporalio/auto-setup:1.22
+     container_name: temporal
+     depends_on:
+        - postgres
+     environment:
+       DB: postgres
+       DB_PORT: 5432
+       POSTGRES_USER: temporal
+       POSTGRES_PWD: temporal 
+       POSTGRES_SEEDS: postgres
+     ports:
+        - 7233:7233
+
+  temporal-web:
+     image: temporalio/ui:latest
+     container_name: temporal-web
+     depends_on:
+        - temporal
+     environment:
+        TEMPORAL_ADDRESS: temporal:7233
+     ports:
+        - 1001:8080	
 
   customerservice:
     image: customerservice:latest
@@ -100,7 +134,6 @@ services:
       - eureka
     labels:
       service_logs_with_filebeat: "true"
-      
 
   productservice:
     image: productservice:latest

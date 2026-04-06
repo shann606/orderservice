@@ -75,6 +75,8 @@ public class OrderItems {
 	@Column(name = "product_id")
 	private UUID productId;
 	
+	private int quantity;
+	
 	@Column(name = "order_by")
 	private String orderBy;
 	
