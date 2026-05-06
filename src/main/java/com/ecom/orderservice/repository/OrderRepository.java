@@ -1,7 +1,10 @@
 package com.ecom.orderservice.repository;
 
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -34,5 +37,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 	@Query("UPDATE Order o SET o.paymentStatus = :paymentStatus,o.orderStatus=:orderStatus , o.failedReason= :reason WHERE o.orderNo = :orderNo")
 	int updatePaymentStatus(@Param("paymentStatus") PaymentStatus paymentStatus, @Param("reason") String reason,
 			@Param("orderStatus") OrderStatus orderStatus, @Param("orderNo") long orderNo);
+	
+	@EntityGraph(attributePaths = {"orderItems"} , type = EntityGraphType.FETCH)
+	List<Order>  findAll();
 
 }
