@@ -114,6 +114,8 @@ public class OrderService {
 
 	public List<OrderDTO> findAllOrders() {
 
+		//return cMapper.toOrdersList(orderRepo.findAll());
+		
 		return cMapper.toOrdersList(orderRepo.findAll());
 	}
 
