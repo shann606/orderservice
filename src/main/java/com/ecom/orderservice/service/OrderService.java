@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ import com.ecom.orderservice.dto.ShippingStatus;
 import com.ecom.orderservice.entity.Order;
 import com.ecom.orderservice.events.OrderCreatedEvent;
 import com.ecom.orderservice.events.PaymentResponseEvent;
-import com.ecom.orderservice.mapper.CustomMappaer;
+import com.ecom.orderservice.mapper.CustomMapper;
 import com.ecom.orderservice.repository.OrderRepository;
 import com.ecom.orderservice.saga.OrderDetails;
 import com.ecom.orderservice.saga.OrderItemDetails;
@@ -35,13 +36,12 @@ public class OrderService {
 
 	private OrderRepository orderRepo;
 
-	private CustomMappaer cMapper;
+	private CustomMapper cMapper;
 
 	private final WorkflowClient workFlowClient;
-	private final String taskQueueName ="Order-Process-Queue";
-	
-	
-	public OrderService(OrderRepository orderRepo, CustomMappaer cMapper, WorkflowClient workFlowClient) {
+	private final String taskQueueName = "Order-Process-Queue";
+
+	public OrderService(OrderRepository orderRepo, CustomMapper cMapper, WorkflowClient workFlowClient) {
 		this.orderRepo = orderRepo;
 		this.cMapper = cMapper;
 		this.workFlowClient = workFlowClient;
@@ -49,10 +49,9 @@ public class OrderService {
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public OrderDTO placeOrder(OrderDTO orders)  {
+	public OrderDTO placeOrder(OrderDTO orders) {
 		Order order;
 
-		
 		log.info("order creation initiated");
 		if (orders.getId() == null) {
 
@@ -64,33 +63,32 @@ public class OrderService {
 		orders.getOrderItems().stream().forEach(s -> s.setOrderPlacedOn(OffsetDateTime.now())
 
 		);
-		BigDecimal totalAmount = orders.getOrderItems().stream().map(OrderItemsDTO::getItemAmount)
+		BigDecimal totalAmount = orders.getOrderItems().stream()
+				.map(item -> item.getItemAmount() == null ? BigDecimal.ZERO : item.getItemAmount())
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		orders.getOrderItems().stream().forEach(s -> totalAmount.add(s.getItemAmount()));
+	
 		orders.setTotalAmount(totalAmount);
 
 		order = orderRepo.saveAndFlush(cMapper.toOrderEntity(orders));
 
-		
 		// need to invoke temporal service to call workflow to process
-		
+
 		OrderDetails orderDetails = getOrderDetails(order);
-		
-		WorkflowOptions options = WorkflowOptions.newBuilder()
-		        .setTaskQueue(taskQueueName)
-		        .setWorkflowId("order-workflow-"+order.getOrderNo()) // Unique workflow ID
-		        .build();
-		
+
+		WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(taskQueueName)
+				.setWorkflowId("order-workflow-" + order.getOrderNo()) // Unique workflow ID
+				.build();
+
 		OrderWorkFlow workFlow = workFlowClient.newWorkflowStub(OrderWorkFlow.class, options);
 
 		// Start the workflow execution asynchronously using WorkflowClient.start()
 		// This call returns immediately and the workflow runs in the background
 		WorkflowClient.start(workFlow::processOrder, orderDetails);
 
-      log.info("WorkFlow id :::: for the order no :::" + order.getOrderNo() + "" + options.getWorkflowId());
+		log.info("WorkFlow id :::: for the order no :::" + order.getOrderNo() + "" + options.getWorkflowId());
 
-      order=orderRepo.findById(order.getId()).get();
+		order = orderRepo.findById(order.getId()).get();
 
 		return cMapper.toOrderDto(order);
 	}
@@ -98,7 +96,7 @@ public class OrderService {
 	private OrderDetails getOrderDetails(Order orders) {
 
 		return new OrderDetails(orders.getId(), orders.getOrderNo(), orders.getPaymentStatus(), orders.getOrderStatus(),
-				orders.getOrderPlaced(), orders.getTotalAmount(),
+				orders.getOrderPlaced(), orders.getTotalAmount()== null ? BigDecimal.ZERO : orders.getTotalAmount(),
 				orders.getOrderItems().stream()
 						.map(x -> new OrderItemDetails(x.getId(), x.getOrderId(), x.getProductId(), x.getQuantity()))
 						.toList());
@@ -114,14 +112,12 @@ public class OrderService {
 
 	public List<OrderDTO> findAllOrders() {
 
-		//return cMapper.toOrdersList(orderRepo.findAll());
-		
+		// return cMapper.toOrdersList(orderRepo.findAll());
+
 		return cMapper.toOrdersList(orderRepo.findAll());
 	}
 
 	public OrderDTO findByOrderId(UUID id) throws Exception {
-
-		log.info("getting id or nor " + orderRepo.findById(id).get().toString());
 
 		return cMapper.toOrderDto(orderRepo.findById(id).get());
 	}
@@ -137,7 +133,7 @@ public class OrderService {
 			}
 
 		} catch (Exception e) {
-			log.error("update payment status error"+ e);
+			log.error("update payment status error" + e);
 			throw e;
 		}
 		return i;
@@ -153,8 +149,8 @@ public class OrderService {
 				log.info("Payment Update status successfull updated in Order table");
 			}
 		} catch (Exception e) {
-		log.error("update payment status error"+ e);
-			
+			log.error("update payment status error" + e);
+
 			throw e;
 		}
 		return i;

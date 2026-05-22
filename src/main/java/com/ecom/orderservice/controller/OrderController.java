@@ -46,7 +46,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<OrderDTO> getAllOrderByOrderNo(@PathVariable UUID id) throws Exception {
+	public ResponseEntity<OrderDTO> getOrderById(@PathVariable UUID id) throws Exception {
 
 		return ResponseEntity.ok(orderService.findByOrderId(id));
 

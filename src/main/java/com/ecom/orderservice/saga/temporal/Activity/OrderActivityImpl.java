@@ -35,7 +35,7 @@ public class OrderActivityImpl implements OrderActivity {
 
 	private final RestTemplate restTemplate;
 	private final KafkaTemplate<String, Object> kafkaTemplate;
-	private OrderCreatedEvent orderEvent;
+
 	private OrderService orderService;
 
 	public OrderActivityImpl(RestTemplate restTemplate, KafkaTemplate<String, Object> kafkaTemplate,
@@ -70,6 +70,7 @@ public class OrderActivityImpl implements OrderActivity {
 
 	@Override
 	public void processPayment(OrderDetails order) {
+		OrderCreatedEvent orderEvent;
 		logger.info("inprocessPayment Method " + order.getOrderNo());
 
 		orderEvent = new OrderCreatedEvent(order.getOrderNo(), order.getOrderCreatedOn(), order.getAmount());
@@ -79,10 +80,10 @@ public class OrderActivityImpl implements OrderActivity {
 		future.whenComplete((result, ex) -> {
 
 			if (ex == null) {
-				logger.info("Order created details sent to kafka ");
+				logger.info("Order created details sent to kafka " + result.getRecordMetadata().offset());
 
 			} else {
-				logger.info("Excepion occured the details :" + ex.toString());
+				logger.error("Exception occureing during message delivery :: " + ex);
 				throw new RuntimeException(ex.getMessage());
 			}
 
@@ -93,10 +94,10 @@ public class OrderActivityImpl implements OrderActivity {
 	}
 
 	@Override
-	public int updateOrderPayment(PaymentResponseEvent payment,OrderStatus status) {
+	public int updateOrderPayment(PaymentResponseEvent payment, OrderStatus status) {
 		logger.info("getting call back from the payment update Service Original");
 
-		return orderService.updatePaymentStatus(payment,status);
+		return orderService.updatePaymentStatus(payment, status);
 
 	}
 
