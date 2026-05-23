@@ -15,15 +15,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.ecom.orderservice.dto.OrderDTO;
 import com.ecom.orderservice.dto.OrderItemsDTO;
@@ -32,16 +29,14 @@ import com.ecom.orderservice.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(OrderController.class)
 class OrderControllerTest {
 
+	@Autowired
 	private MockMvc mockMvc;
 
-	@Mock
+	@MockitoBean
 	private OrderService orderService;
-
-	@InjectMocks
-	private OrderController orderController;
 
 	private static OrderDTO ord;
 
@@ -68,21 +63,16 @@ class OrderControllerTest {
 
 	}
 
-	@BeforeEach
-	void setup() {
-		mockMvc = MockMvcBuilders.standaloneSetup(orderController).build();
-	}
-
 	@Test
 	void testplaceOrder() throws Exception {
 
-		when(orderService.placeOrder(any())).thenReturn(ord);
+		when(orderService.placeOrder(any(OrderDTO.class))).thenReturn(ord);
 
 		mockMvc.perform(post("/api/v1/orders/order").contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(ord))).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.orderNo").value(68686));
 
-		verify(orderService, times(1)).placeOrder(any());
+		verify(orderService, times(1)).placeOrder(ord);
 	}
 
 	@Test
@@ -95,7 +85,7 @@ class OrderControllerTest {
 				.content(mapper.writeValueAsString(ord))).andExpect(status().isOk())
 				.andExpect(jsonPath("$.orderNo").value(68686));
 
-		verify(orderService, times(1)).findByOrderId(any());
+		verify(orderService, times(1)).findByOrderId(id);
 
 	}
 
@@ -116,8 +106,7 @@ class OrderControllerTest {
 
 		when(orderService.findAllOrders()).thenReturn(allOrders);
 
-		mockMvc.perform(get("/api/v1/orders")).andExpect(status().isOk())
-		.andReturn();
+		mockMvc.perform(get("/api/v1/orders")).andExpect(status().isOk()).andReturn();
 
 		verify(orderService, times(1)).findAllOrders();
 
